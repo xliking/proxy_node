@@ -16,7 +16,6 @@ import java.util.Arrays;
 public class ProxyNodeApplication {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ProxyNodeApplication.class);
-
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(ProxyNodeApplication.class);
         ConfigurableApplicationContext run = app.run(args);
