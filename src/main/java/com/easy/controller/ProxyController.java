@@ -4,10 +4,7 @@ import com.easy.exception.BusinessException;
 import com.easy.pojo.dto.ProxyDTO;
 import com.easy.resutils.R;
 import com.easy.utils.proxy.GetXuiProxyUtil;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +17,10 @@ import java.util.List;
 @CrossOrigin
 public class ProxyController {
 
+    @GetMapping("/api/test")
+    public R<String> test() {
+        return R.ok("测试成功");
+    }
 
     @PostMapping("/api")
     public R<List<String>> proxy(@RequestBody ProxyDTO proxyDTO) {
@@ -33,7 +34,7 @@ public class ProxyController {
             try {
                 res = GetXuiProxyUtil.loginAndGetUrl(url, proxyDTO.getUsername(), proxyDTO.getPassword());
             } catch (Exception e) {
-                resUrlList.add("URL：" + url + " 获取失败");
+                resUrlList.add("URL：" + url + " 获取失败 ： " + e.getMessage());
                 continue;
             }
             try {
