@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: proxy_node
+server:
+  port: 9080
