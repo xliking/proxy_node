@@ -5,7 +5,7 @@
         本捐赠的 Key 仅用于维持 IP 检测的使用。若您支持，可在
         <a href="https://dashboard.ipregistry.co/signin" target="_blank" rel="noopener noreferrer">IPRegistry</a>
         注册账号，获取 Key 并发送给我。您可以发送邮件至
-        <a href="mailto:postmaster@xlike.email">postmaster@xlike.email</a>
+        <a href="mailto:linux@xlike.email">linux@xlike.email</a>
         ，或者在下方的输入框中输入 Key 并发送即可，非常感谢您的支持！
       </p>
 
@@ -25,10 +25,12 @@
       <div v-if="message" :class="['message', messageType]">
         <span class="icon">
           <svg v-if="messageType === 'success'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M9 16.17l-3.88-3.88a1 1 0 00-1.41 1.41l4.59 4.59a1 1 0 001.41 0l10-10a1 1 0 10-1.41-1.41L9 16.17z"/>
+            <path fill="currentColor"
+                  d="M9 16.17l-3.88-3.88a1 1 0 00-1.41 1.41l4.59 4.59a1 1 0 001.41 0l10-10a1 1 0 10-1.41-1.41L9 16.17z"/>
           </svg>
           <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13l-1.41 1.41L12 13.41l-3.59 3.59L7 15l3.59-3.59L7 7.83 8.41 6.42 12 10l3.59-3.58L17 7.83l-3.59 3.59L17 15z"/>
+            <path fill="currentColor"
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13l-1.41 1.41L12 13.41l-3.59 3.59L7 15l3.59-3.59L7 7.83 8.41 6.42 12 10l3.59-3.58L17 7.83l-3.59 3.59L17 15z"/>
           </svg>
         </span>
         {{ message }}
@@ -38,6 +40,8 @@
 </template>
 
 <script>
+import axios from "../axios.js";
+
 export default {
   name: 'DonateKeyPage',
   data() {
@@ -58,21 +62,16 @@ export default {
 
       try {
         // 替换为您的后端 API 端点
-        const response = await fetch('https://your-backend-api.com/api/submit-key', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ key: trimmedKey }),
+        const response = await axios.post('/email/sendKey', {
+          key: trimmedKey
         });
 
-        if (response.ok) {
-          this.message = 'Key 已成功发送！非常感谢您的支持。';
+        if (response.code === 0) {
+          this.message = response.data;
           this.messageType = 'success';
           this.key = '';
         } else {
-          const errorData = await response.json();
-          this.message = errorData.message || '发送失败，请稍后再试。';
+          this.message = response.msg;
           this.messageType = 'error';
         }
       } catch (error) {

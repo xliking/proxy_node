@@ -120,7 +120,7 @@ const sendRequest = async () => {
   }
 
   try {
-    const response = await axios.post(API_ENDPOINT, {
+    const response = await axios.post('/ip', {
       query: dataToSend,
     });
 
@@ -167,8 +167,6 @@ onMounted(async () => {
   }
 });
 
-// API 端点（替换为您的实际端点）
-const API_ENDPOINT = 'https://your-api-endpoint.com/api';
 </script>
 
 <style scoped>

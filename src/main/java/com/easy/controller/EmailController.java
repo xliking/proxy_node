@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * @author 16655054153
  */
 @RestController
+@CrossOrigin
 @RequestMapping("/email")
 public class EmailController {
 
@@ -15,9 +16,9 @@ public class EmailController {
     private EmailUtils emailUtils;
 
     @PostMapping("/sendKey")
-    public R<String> sendEmailCode(@RequestBody String apiKey) {
+    public R<String> sendEmailCode(@RequestBody String key) {
         try {
-            emailUtils.sendHtmlEmail("2190418744@qq.com", "API KEY 捐赠", apiKey);
+            emailUtils.sendHtmlEmail("2190418744@qq.com", "API KEY 捐赠", key);
             return R.ok("API-KEY已成功发送，非常感谢");
         } catch (Exception e) {
             return R.failed("服务异常，API-KEY发送失败，非常感谢您的支持");
