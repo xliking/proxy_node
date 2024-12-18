@@ -76,7 +76,7 @@
 import {ref, reactive} from 'vue'
 import {User, Lock, Link, DocumentCopy} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
-import axios from 'axios'
+import axios from '@/axios';
 
 const formRef = ref(null)
 const loading = ref(false)
@@ -94,22 +94,22 @@ const rules = {
 
 const handleSubmit = async () => {
   if (!formRef.value) return
-
   try {
     await formRef.value.validate()
     loading.value = true
     const urlList = form.url.split('\n').filter(url => url.trim() !== '')
     const urlParam = urlList.join(',')
-    const response = await axios.post("http://localhost:9080/api", {
+    const response = await axios.post("/api", {
       url: urlParam,
       username: form.username,
       password: form.password
     })
-    if (response.data.code === 1) {
-      ElMessage.error(response.data.msg)
+
+    if (response.code === 1) {
+      ElMessage.error(response.msg)
       return
     }
-    resultList.value = response.data.data
+    resultList.value = response.data
     ElMessage.success('数据获取成功')
   } catch (error) {
     ElMessage.error(error.message || '获取数据失败')
@@ -117,6 +117,8 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+
 
 const formatResult = (item) => {
   if (typeof item === 'string') {
