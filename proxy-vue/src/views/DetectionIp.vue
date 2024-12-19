@@ -59,9 +59,11 @@
             align="center"
         >
           <template v-slot="scope">
-            <el-tag :type="scope.row.isAbuser ? 'danger' : 'success'">
-              {{ scope.row.isAbuser ? '是' : '否' }}
-            </el-tag>
+            <el-tooltip content="表示 IP 地址是否是已知的滥用来源（例如垃圾邮件、收割者、注册机器人）" placement="top">
+              <el-tag :type="scope.row.isAbuser ? 'danger' : 'success'">
+                {{ scope.row.isAbuser ? '是' : '否' }}
+              </el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -72,9 +74,13 @@
             align="center"
         >
           <template v-slot="scope">
-            <el-tag :type="scope.row.isCloudProvider ? 'danger' : 'success'">
-              {{ scope.row.isCloudProvider ? '是' : '否' }}
-            </el-tag>
+            <el-tooltip
+                content="表示 IP 地址是否用于托管目的（例如来自 Akamai、Cloudflare、Google Cloud Platform、Amazon EC2 等的节点）"
+                placement="top">
+              <el-tag :type="scope.row.isCloudProvider ? 'danger' : 'success'">
+                {{ scope.row.isCloudProvider ? '是' : '否' }}
+              </el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -86,9 +92,13 @@
             align="center"
         >
           <template v-slot="scope">
-            <el-tag :type="scope.row.isProxy ? 'danger' : 'success'">
-              {{ scope.row.isProxy ? '是' : '否' }}
-            </el-tag>
+            <el-tooltip
+                content="表示 IP 地址是否为已知代理。它包括 HTTP/HTTPS/SSL/SOCKS/CONNECT 和透明代理"
+                placement="top">
+              <el-tag :type="scope.row.isProxy ? 'danger' : 'success'">
+                {{ scope.row.isProxy ? '是' : '否' }}
+              </el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -100,9 +110,13 @@
             align="center"
         >
           <template v-slot="scope">
-            <el-tag :type="scope.row.isRelay ? 'danger' : 'success'">
-              {{ scope.row.isRelay ? '是' : '否' }}
-            </el-tag>
+            <el-tooltip
+                content="表示 IP 地址是否为已知中继。中继 IP 地址并非设计用于绕过地理控制，而是将多个用户集中到同一个 IP 后面"
+                placement="top">
+              <el-tag :type="scope.row.isRelay ? 'danger' : 'success'">
+                {{ scope.row.isRelay ? '是' : '否' }}
+              </el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -114,9 +128,13 @@
             align="center"
         >
           <template v-slot="scope">
-            <el-tag :type="scope.row.isVpn ? 'danger' : 'success'">
-              {{ scope.row.isVpn ? '是' : '否' }}
-            </el-tag>
+            <el-tooltip
+                content="表示此 IP 地址被虚拟专用网络 (VPN) 使用"
+                placement="top">
+              <el-tag :type="scope.row.isVpn ? 'danger' : 'success'">
+                {{ scope.row.isVpn ? '是' : '否' }}
+              </el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -128,7 +146,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import {ref, onMounted} from 'vue';
 import axios from '@/axios';
 import {
   ElTable,
@@ -171,7 +189,7 @@ const getClientIP = async () => {
     }
 
     // 请求后端API以获取IP相关信息
-    const ipInfoResponse = await axios.post('/ip', { query: ip });
+    const ipInfoResponse = await axios.post('/ip', {query: ip});
 
     // 假设响应数据是一个数组，包含 ip, type, companyName, countryAddress, isAbuser, isCloudProvider, isProxy, isRelay, isVpn 等字段
     const newData = ipInfoResponse.data.map((item) => ({
