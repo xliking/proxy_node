@@ -2,14 +2,14 @@
   <div class="container">
     <!-- 左侧面板 -->
     <div class="left-panel">
-      <h2>发送请求</h2>
+      <h2>批量IP检测</h2>
       <textarea
           v-model="inputData"
-          @keyup.enter="sendRequest"
-          placeholder="请输入内容..."
+          @keydown="handleKeydown"
+          placeholder="请输入IP,暂不支持域名，可以,号或者换行都可以  ctrl+enter 发送请求"
           class="input-box"
       ></textarea>
-      <button @click="sendRequest" class="send-button">请求</button>
+      <button @click="sendRequest" class="send-button">获取结果</button>
     </div>
 
     <!-- 中间分隔线 -->
@@ -37,46 +37,99 @@
             width="150">
         </el-table-column>
         <el-table-column
-            prop="country"
-            label="国家"
-            width="120">
+            prop="type"
+            label="类型"
+            width="80">
         </el-table-column>
         <el-table-column
-            prop="address"
-            label="地址"
-            min-width="200">
+            prop="companyName"
+            label="所属企业"
+            min-width="180">
         </el-table-column>
         <el-table-column
-            prop="riskLevel"
-            label="IP风险度"
+            prop="countryAddress"
+            label="国家区域"
             width="150">
-          <template #default="scope">
-            <el-rate v-model="scope.row.riskLevel" :disabled="true" :allow-half="true"></el-rate>
+        </el-table-column>
+
+        <el-table-column
+            prop="isAbuser"
+            label="是否滥用"
+            width="100"
+            align="center"
+        >
+          <template v-slot="scope">
+            <el-tag :type="scope.row.isAbuser ? 'danger' : 'success'">
+              {{ scope.row.isAbuser ? '是' : '否' }}
+            </el-tag>
           </template>
         </el-table-column>
+
         <el-table-column
-            prop="column6"
-            label="列6"
-            width="100">
+            prop="isCloudProvider"
+            label="是否托管"
+            width="100"
+            align="center"
+        >
+          <template v-slot="scope">
+            <el-tag :type="scope.row.isCloudProvider ? 'danger' : 'success'">
+              {{ scope.row.isCloudProvider ? '是' : '否' }}
+            </el-tag>
+          </template>
         </el-table-column>
+
+        <!-- 是否已知代理 -->
         <el-table-column
-            prop="column7"
-            label="列7"
-            width="100">
+            prop="isProxy"
+            label="是否已知代理"
+            width="120"
+            align="center"
+        >
+          <template v-slot="scope">
+            <el-tag :type="scope.row.isProxy ? 'danger' : 'success'">
+              {{ scope.row.isProxy ? '是' : '否' }}
+            </el-tag>
+          </template>
         </el-table-column>
+
+        <!-- 是否中继 -->
         <el-table-column
-            prop="column8"
-            label="列8"
-            width="100">
+            prop="isRelay"
+            label="是否中继"
+            width="100"
+            align="center"
+        >
+          <template v-slot="scope">
+            <el-tag :type="scope.row.isRelay ? 'danger' : 'success'">
+              {{ scope.row.isRelay ? '是' : '否' }}
+            </el-tag>
+          </template>
         </el-table-column>
+
+        <!-- 是否VPN -->
+        <el-table-column
+            prop="isVpn"
+            label="是否VPN"
+            width="100"
+            align="center"
+        >
+          <template v-slot="scope">
+            <el-tag :type="scope.row.isVpn ? 'danger' : 'success'">
+              {{ scope.row.isVpn ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
       </el-table>
     </div>
+
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import axios from '@/axios';
 import {
   ElTable,
   ElTableColumn,
@@ -99,15 +152,72 @@ const updateTableHeight = () => {
   tableHeight.value = `${windowHeight - 150}px`;
 };
 
+
+const handleKeydown = (event) => {
+  if (event.ctrlKey && event.key === 'Enter') {
+    sendRequest();
+  }
+};
+
 // 获取当前IP地址
 const getClientIP = async () => {
   try {
-    const response = await axios.get('https://api.ipify.org?format=json');
-    return response.data.ip;
+    // 获取客户端的公共IP
+    const ipResponse = await axios.get('https://api.ipify.org?format=json');
+    const ip = ipResponse.ip;
+    if (!ip) {
+      ElMessage.error('未能获取到IP地址，请手动输入');
+      return;
+    }
+
+    // 请求后端API以获取IP相关信息
+    const ipInfoResponse = await axios.post('/ip', { query: ip });
+
+    // 假设响应数据是一个数组，包含 ip, type, companyName, countryAddress, isAbuser, isCloudProvider, isProxy, isRelay, isVpn 等字段
+    const newData = ipInfoResponse.data.map((item) => ({
+      ip: item.ip || '未知',
+      type: item.type || '未知',
+      companyName: item.companyName || '未知',
+      countryAddress: item.countryAddress || '未知',
+      isAbuser: item.isAbuser ?? 'N/A',
+      isCloudProvider: item.isCloudProvider ?? 'N/A',
+      isProxy: item.isProxy ?? 'N/A',
+      isRelay: item.isRelay ?? 'N/A',
+      isVpn: item.isVpn ?? 'N/A',
+    }));
+
+
+    // 将新数据添加到现有数据的顶部
+    responses.value = [...newData, ...responses.value];
+    inputData.value = '';
+    ElMessage.success('请求成功！');
   } catch (error) {
-    console.error('获取IP地址失败:', error);
-    ElMessage.error('获取IP地址失败，请手动输入');
-    return null;
+    console.error('请求失败:', error);
+
+    // 根据错误类型进行不同的处理
+    if (error.response) {
+      // 服务器返回了一个状态码，但状态码超出了2xx的范围
+      ElMessage.error(`请求失败：${error.response.status} ${error.response.statusText}`);
+    } else if (error.request) {
+      // 请求已经发出，但没有收到响应
+      ElMessage.error('请求失败：未收到服务器响应');
+    } else {
+      // 在设置请求时发生了一些事情，触发了一个错误
+      ElMessage.error(`请求失败：${error.message}`);
+    }
+
+    // 在顶部插入一条错误信息
+    responses.value.unshift({
+      ip: 'N/A',
+      type: 'N/A',
+      companyName: '请求失败',
+      countryAddress: '未知',
+      isAbuser: 'N/A',
+      isCloudProvider: 'N/A',
+      isProxy: 'N/A',
+      isRelay: 'N/A',
+      isVpn: 'N/A',
+    });
   }
 };
 
@@ -118,21 +228,22 @@ const sendRequest = async () => {
     ElMessage.warning('请输入内容！');
     return;
   }
-
   try {
-    const response = await axios.post('/ip', {
+    const ipInfoResponse = await axios.post('/ip', {
       query: dataToSend,
     });
 
     // 假设响应数据是一个数组，包含 ip, country, address, riskLevel 等字段
-    const newData = response.data.map((item) => ({
+    const newData = ipInfoResponse.data.map((item) => ({
       ip: item.ip || '未知',
-      country: item.country || '未知',
-      address: item.address || '未知',
-      riskLevel: item.riskLevel || 0,
-      column6: item.column6 || 'N/A',
-      column7: item.column7 || 'N/A',
-      column8: item.column8 || 'N/A',
+      type: item.type || '未知',
+      companyName: item.companyName || '未知',
+      countryAddress: item.countryAddress || '未知',
+      isAbuser: item.isAbuser ?? 'N/A',
+      isCloudProvider: item.isCloudProvider ?? 'N/A',
+      isProxy: item.isProxy ?? 'N/A',
+      isRelay: item.isRelay ?? 'N/A',
+      isVpn: item.isVpn ?? 'N/A',
     }));
 
     // 将新数据添加到现有数据的顶部
@@ -145,12 +256,14 @@ const sendRequest = async () => {
     // 在顶部插入一条错误信息
     responses.value.unshift({
       ip: 'N/A',
-      country: 'N/A',
-      address: '请求失败',
-      riskLevel: 0,
-      column6: 'N/A',
-      column7: 'N/A',
-      column8: 'N/A',
+      type: 'N/A',
+      companyName: '请求失败',
+      countryAddress: '未知',
+      isAbuser: 'N/A',
+      isCloudProvider: 'N/A',
+      isProxy: 'N/A',
+      isRelay: 'N/A',
+      isVpn: 'N/A',
     });
   }
 };

@@ -1,4 +1,5 @@
 package com.easy.controller;
+import com.easy.pojo.dto.KeyDTO;
 import com.easy.resutils.R;
 import com.easy.utils.email.EmailUtils;
 import jakarta.annotation.Resource;
@@ -16,9 +17,12 @@ public class EmailController {
     private EmailUtils emailUtils;
 
     @PostMapping("/sendKey")
-    public R<String> sendEmailCode(@RequestBody String key) {
+    public R<String> sendEmailCode(@RequestBody KeyDTO keyDTO) {
         try {
-            emailUtils.sendHtmlEmail("2190418744@qq.com", "API KEY 捐赠", key);
+            if(keyDTO.getKey() == null || keyDTO.getKey().isEmpty()){
+                return R.failed("API-KEY是空的呢");
+            }
+            emailUtils.sendHtmlEmail("2190418744@qq.com", "API KEY 捐赠", keyDTO.getKey());
             return R.ok("API-KEY已成功发送，非常感谢");
         } catch (Exception e) {
             return R.failed("服务异常，API-KEY发送失败，非常感谢您的支持");
