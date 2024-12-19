@@ -4,9 +4,13 @@
       <p class="description">
         本捐赠的 Key 仅用于维持 IP 检测的使用。若您支持，可在
         <a href="https://dashboard.ipregistry.co/signin" target="_blank" rel="noopener noreferrer">IPRegistry</a>
-        注册账号，获取 Key 并发送给我。您可以发送邮件至
+        注册账号，获取 Key。您也可以发送邮件至
         <a href="mailto:linux@xlike.email">linux@xlike.email</a>
         ，或者在下方的输入框中输入 Key 并发送即可，非常感谢您的支持！
+        <br>
+        <span class="note">
+           <a href="https://github.com/xliking/proxy_node">原项目在此处，需要的可以查看</a>
+        </span>
       </p>
 
       <form @submit.prevent="submitKey" class="key-form">
