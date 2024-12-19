@@ -1,22 +1,22 @@
 <template>
   <div class="home-container">
     <div class="cards-container">
-      <NavBox title="获取节点" to="/Proxy">
+      <NavBox title="获取节点" to="/proxy">
         <template #icon>
           <i class="fa fa-location-arrow"></i>
         </template>
       </NavBox>
-      <NavBox title="文本转化" to="/Text">
+      <NavBox title="文本转化" to="/text">
         <template #icon>
           <i class="fa fa-pencil"></i>
         </template>
       </NavBox>
-      <NavBox title="IP检测" to="/DetectionIp">
+      <NavBox title="IP检测" to="/detectionIp">
         <template #icon>
           <i class="fas fa-chart-line"></i>
         </template>
       </NavBox>
-      <NavBox title="key捐赠" to="/Donate">
+      <NavBox title="key捐赠" to="/donate">
         <template #icon>
           <i class="fa fa-heart"></i>
         </template>
