@@ -9,7 +9,7 @@
         ，或者在下方的输入框中输入 Key 并发送即可，非常感谢您的支持！
         <br>
         <span class="note">
-           <a href="https://github.com/xliking/proxy_node">原项目在此处，需要的可以查看</a>
+           <a href="https://github.com/xliking/proxy_node"  target="_blank" rel="noopener noreferrer">原项目在此处，需要的可以查看</a>
         </span>
       </p>
 
