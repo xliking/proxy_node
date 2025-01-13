@@ -12,6 +12,11 @@ const routes = [
     hidden: true
   },
   {
+    path: '/proxy-wb',
+    component: () => import('../views/Proxy-wb.vue'),
+    hidden: true
+  },
+  {
     path: '/text',
     component: () => import('../views/Text.vue'),
     hidden: true

@@ -6,12 +6,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 import java.util.Arrays;
 
 /**
  * @author Administrator
  */
+@EnableWebSocket
 @SpringBootApplication
 public class ProxyNodeApplication {
 
