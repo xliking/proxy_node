@@ -6,6 +6,11 @@
           <i class="fa fa-location-arrow"></i>
         </template>
       </NavBox>
+      <NavBox title="获取节点(增强版)" to="/proxy-wb">
+        <template #icon>
+          <i class="fa fa-location-arrow"></i>
+        </template>
+      </NavBox>
       <NavBox title="文本转化" to="/text">
         <template #icon>
           <i class="fa fa-pencil"></i>

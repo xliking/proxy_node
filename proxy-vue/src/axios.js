@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { config } from './config'
 
 // 创建一个Axios实例
 const instance = axios.create({
-    baseURL: 'http://127.0.0.1:9988', // 替换为你的固定IP和端口号
-    timeout: 300000, // 请求超时时间（可选） 5分钟
+    baseURL: config.BASE_URL,
+    timeout: config.TIMEOUT, // 请求超时时间（可选） 5分钟
     headers: {
         'Content-Type': 'application/json',
     },

@@ -15,7 +15,7 @@
                 :prefix-icon="Link"
                 placeholder="请输入单个URL或多个URL(每行一个)"
                 type="textarea"
-                rows="4"
+                rows="8"
                 class="custom-input">
             </el-input>
           </el-form-item>
@@ -56,16 +56,35 @@
     <div class="right-panel">
       <div class="result-container">
         <div class="result-header">
-          <h3>数据结果</h3>
-          <el-button v-if="resultList.length" type="primary" link @click="handleCopyAll" class="copy-button">
-            <el-icon><DocumentCopy/></el-icon>
-            一键复制
-          </el-button>
+          <div class="header-left">
+            <h3>数据结果</h3>
+            <span class="result-count" v-if="resultList.length">
+            共 {{ resultList.length }} 条数据
+          </span>
+          </div>
+          <div class="header-right">
+            <el-switch
+                v-model="autoScroll"
+                active-text="自动滚动"
+                class="auto-scroll-switch"
+            />
+            <el-button
+                v-if="resultList.length"
+                type="primary"
+                link
+                @click="handleCopyAll"
+                class="copy-button">
+              <el-icon><DocumentCopy/></el-icon>
+              一键复制
+            </el-button>
+          </div>
         </div>
 
         <div class="result-content" v-if="resultList.length">
-          <div class="result-scroll">
-            <div v-for="(item, index) in resultList" :key="index" class="result-item">
+          <div class="result-scroll custom-scrollbar" ref="scrollContainer">
+            <div v-for="(item, index) in resultList"
+                 :key="index"
+                 class="result-item">
               <pre>{{ formatResult(item) }}</pre>
             </div>
           </div>
@@ -74,21 +93,35 @@
         <div v-else class="empty-result">
           <el-empty description="暂无数据" />
         </div>
+
+        <!-- 返回顶部按钮 -->
+        <el-button
+            v-show="showBackTop"
+            class="back-to-top"
+            circle
+            @click="scrollToTop">
+          <el-icon><ArrowUp></ArrowUp></el-icon>
+        </el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import {ref, reactive, onMounted, onUnmounted} from 'vue'
+import {ref, reactive, onMounted, onUnmounted, watch, nextTick} from 'vue'
 import {User, Lock, Link, DocumentCopy} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
+import { config } from '../config'
 
 const formRef = ref(null)
 const loading = ref(false)
 const resultList = ref([])
 const isConnected = ref(false)
-let ws = null
+
+// 新增的 ref 声明
+const scrollContainer = ref(null)
+const autoScroll = ref(true)
+const showBackTop = ref(false)
 
 const form = reactive({
   url: '',
@@ -100,10 +133,41 @@ const rules = {
   url: [{required: true, message: '请输入URL地址', trigger: 'blur'}]
 }
 
+watch(() => resultList.value, () => {
+  if (autoScroll.value) {
+    nextTick(() => {
+      scrollToBottom()
+    })
+  }
+}, { deep: true })
+
+// 滚动到底部方法
+const scrollToBottom = () => {
+  if (scrollContainer.value) {
+    const container = scrollContainer.value
+    container.scrollTop = container.scrollHeight
+  }
+}
+
+// 滚动到顶部方法
+const scrollToTop = () => {
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollTop = 0
+  }
+}
+
+// 处理滚动事件
+const handleScroll = () => {
+  if (scrollContainer.value) {
+    showBackTop.value = scrollContainer.value.scrollTop > 300
+  }
+}
+
+let ws = null;
 // WebSocket连接函数
-const connectWebSocket = () => {
+function connectWebSocket(){
   // 根据实际部署修改WebSocket地址
-  ws = new WebSocket('ws://127.0.0.1:9988/ws/proxy')
+  ws = new WebSocket(`${config.WS_URL}/ws/proxy`)
 
   ws.onopen = () => {
     isConnected.value = true
@@ -130,6 +194,10 @@ const connectWebSocket = () => {
     }
   }
 }
+
+
+
+
 
 // 重连函数
 const reconnect = () => {
@@ -202,12 +270,18 @@ const handleCopyAll = () => {
 // 组件挂载时连接WebSocket
 onMounted(() => {
   connectWebSocket()
+  if (scrollContainer.value) {
+    scrollContainer.value.addEventListener('scroll', handleScroll)
+  }
 })
 
 // 组件卸载时关闭WebSocket
 onUnmounted(() => {
   if (ws) {
     ws.close()
+  }
+  if (scrollContainer.value) {
+    scrollContainer.value.removeEventListener('scroll', handleScroll)
   }
 })
 </script>
@@ -240,6 +314,7 @@ onUnmounted(() => {
   background: #f5f7fa;
   min-width: 0;
   height: 100vh;
+  overflow-x: auto;
   overflow: hidden;
 
   .result-container {
@@ -373,7 +448,7 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 12px;
-
+  white-space: nowrap;
   &::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -401,7 +476,11 @@ onUnmounted(() => {
   margin-bottom: 12px;
   transition: all 0.3s ease;
   border: 1px solid transparent;
-
+  min-width: min-content;
+  pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
   &:hover {
     background: #fff;
     border-color: #e4e7ed;
@@ -432,5 +511,41 @@ onUnmounted(() => {
   justify-content: center;
   color: #909399;
 }
+
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.auto-scroll-switch {
+  :deep(.el-switch__label) {
+    color: #909399;
+  }
+}
+
+.back-to-top {
+  position: fixed;
+  right: 40px;
+  bottom: 40px;
+  width: 40px;
+  height: 40px;
+  background: #409eff;
+  color: white;
+  border: none;
+  box-shadow: 0 2px 12px rgba(64, 158, 255, 0.3);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: #66b1ff;
+  }
+}
+
+.result-scroll {
+  scroll-behavior: smooth;
+}
+
 
 </style>
